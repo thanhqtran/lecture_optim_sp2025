@@ -1,53 +1,81 @@
-# Ford-Fulkerson algorith in Python
-
+# Python program for implementation 
+# of Ford Fulkerson algorithm
 from collections import defaultdict
 
-
+# This class represents a directed graph 
+# using adjacency matrix representation
 class Graph:
 
     def __init__(self, graph):
-        self.graph = graph
+        self.graph = graph # residual graph
         self. ROW = len(graph)
+        # self.COL = len(gr[0])
 
+    '''Returns true if there is a path from source 's' to sink 't' in
+    residual graph. Also fills parent[] to store the path '''
 
-    # Using BFS as a searching algorithm 
-    def searching_algo_BFS(self, s, t, parent):
+    def BFS(self, s, t, parent):
 
-        visited = [False] * (self.ROW)
+        # Mark all the vertices as not visited
+        visited = [False]*(self.ROW)
+
+        # Create a queue for BFS
         queue = []
 
+        # Mark the source node as visited and enqueue it
         queue.append(s)
         visited[s] = True
 
+        # Standard BFS Loop
         while queue:
 
+            # Dequeue a vertex from queue and print it
             u = queue.pop(0)
 
+            # Get all adjacent vertices of the dequeued vertex u
+            # If a adjacent has not been visited, then mark it
+            # visited and enqueue it
             for ind, val in enumerate(self.graph[u]):
                 if visited[ind] == False and val > 0:
+                    # If we find a connection to the sink node, 
+                    # then there is no point in BFS anymore
+                    # We just have to set its parent and can return true
                     queue.append(ind)
                     visited[ind] = True
                     parent[ind] = u
+                    if ind == t:
+                        return True
 
-        return True if visited[t] else False
+        # We didn't reach sink in BFS starting 
+        # from source, so return false
+        return False
+            
+    
+    # Returns the maximum flow from s to t in the given graph
+    def FordFulkerson(self, source, sink):
 
-    # Applying fordfulkerson algorithm
-    def ford_fulkerson(self, source, sink):
-        parent = [-1] * (self.ROW)
-        max_flow = 0
+        # This array is filled by BFS and to store path
+        parent = [-1]*(self.ROW)
 
-        while self.searching_algo_BFS(source, sink, parent):
+        max_flow = 0 # There is no flow initially
 
+        # Augment the flow while there is path from source to sink
+        while self.BFS(source, sink, parent) :
+
+            # Find minimum residual capacity of the edges along the
+            # path filled by BFS. Or we can say find the maximum flow
+            # through the path found.
             path_flow = float("Inf")
             s = sink
             while(s != source):
-                path_flow = min(path_flow, self.graph[parent[s]][s])
+                path_flow = min (path_flow, self.graph[parent[s]][s])
                 s = parent[s]
 
-            # Adding the path flows
+            # Add path flow to overall flow
             max_flow += path_flow
 
-            # Updating the residual values of edges
+            # update residual capacities of the edges and reverse edges
+            # along the path
             v = sink
             while(v != source):
                 u = parent[v]
@@ -58,16 +86,42 @@ class Graph:
         return max_flow
 
 
-graph = [[0, 8, 0, 0, 3, 0],
-         [0, 0, 9, 0, 0, 0],
-         [0, 0, 0, 0, 7, 2],
-         [0, 0, 0, 0, 0, 5],
-         [0, 0, 7, 4, 0, 0],
+# Create a graph given in the above diagram
+
+#S, A, B, C, D, T
+# in class
+graph = [[0, 10, 0, 10, 0, 0],
+         [0, 0, 4, 2, 8, 0],
+         [0, 0, 0, 0, 0, 10],
+         [0, 0, 0, 0, 9, 0],
+         [0, 0, 6, 0, 0, 10],
+         [0, 0, 0, 0, 0, 0]]         
+
+# at home
+# S, A, B, C, D, T
+graph = [[0, 16, 13, 0, 0, 0],
+         [0, 0, 10, 12, 0, 0],
+         [0, 4, 0, 0, 14, 0],
+         [0, 0, 9, 0, 0, 20],
+         [0, 0, 0, 7, 0, 4],
+         [0, 0, 0, 0, 0, 0]]
+
+graph = [[0, 6, 2, 0, 0, 0],
+         [0, 0, 1, 3, 0, 0],
+         [0, 0, 0, 0, 7, 0],
+         [0, 0, 3, 0, 0, 2],
+         [0, 0, 0, 0, 0, 7],
+         [0, 0, 0, 0, 0, 0]]
+
+graph = [[0, 4, 6, 0, 0, 0],
+         [0, 0, 0, 6, 2, 0],
+         [0, 4, 0, 4, 0, 0],
+         [0, 0, 0, 0, 0, 6],
+         [0, 0, 0, 0, 1, 2],
          [0, 0, 0, 0, 0, 0]]
 
 g = Graph(graph)
 
-source = 0
-sink = 5
+source = 0; sink = 5
 
-print("Max Flow: %d " % g.ford_fulkerson(source, sink))
+print ("The maximum possible flow is %d " % g.FordFulkerson(source, sink))
